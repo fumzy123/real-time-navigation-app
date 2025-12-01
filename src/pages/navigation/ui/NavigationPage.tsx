@@ -4,13 +4,13 @@ import mapboxgl from "mapbox-gl";
 import { useCurrentLocation } from "../../../entities/location";
 import { useDestinationStore } from "../../../entities/destination";
 
-// import "mapbox-gl/dist/mapbox-gl.css";
+import "mapbox-gl/dist/mapbox-gl.css";
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
 export function NavigationPage() {
   // UI Entities
-  const { position, status } = useCurrentLocation();
+  const { position, status, start, stop } = useCurrentLocation();
   const destination = useDestinationStore((s) => s.selected);
   console.log("Destination:", destination);
   console.log("Position:", position);
@@ -20,6 +20,12 @@ export function NavigationPage() {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
 
   // ----------------------- Effect --------------------------------
+  // When component moutns start getting current location
+  useEffect(() => {
+    start();   // start watching GPS immediately on mount
+    return () => stop(); // clean up on unmount
+  }, []);
+
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
