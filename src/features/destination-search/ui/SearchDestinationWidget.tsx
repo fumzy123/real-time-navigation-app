@@ -5,17 +5,20 @@ import {
 } from "../../../entities/destination";
 import { AddressHistoryList } from "../../address-history-list/ui/AddressHistoryList";
 import type { HistoryItem } from "../../../entities/address-history/api";
+import { useSaveAddressHistory } from "../../../entities/address-history/model/useAddressHistory";
 
 export function SearchDestinationWidget() {
   //----------------------- Store --------------------------------------
   const destination = useDestinationStore((s) => s.selected);
   const setDestination = useDestinationStore((s) => s.setSelected);
 
+  const saveAddressMutation = useSaveAddressHistory();
+
   // React Router
   const navigate = useNavigate();
 
   //----------------------- Event Handler --------------------------------------
-  const goToNavigationPage = () => {
+  const goToNavigationPage = async () => {
     console.log(
       "🚀 ~ goToNavigationPage: ~ destination:",
       destination
@@ -24,18 +27,28 @@ export function SearchDestinationWidget() {
       alert("Please select a destination first.");
       return;
     }
+
+    console.log("About to save", destination);
+    // Save Address to Database
+    await saveAddressMutation.mutateAsync({
+      addressText: destination.name,
+      longitude: destination.coordinates[0],
+      latitude: destination.coordinates[1],
+    });
+
+    // Go to next page
     navigate("/navigate");
   };
 
   // HANDLER 1: For the Mapbox Geocoder (which calls setSelected internally)
-    // HANDLER 2: For the History List (defined here for direct access to setSelected)
-    const handleAddressSelected = (item: HistoryItem) => {
-      // Direct update, bypassing geocoding (as discussed previously)
-      setDestination({
-          id: item.id,
-          name: item.addressText,
-          coordinates: item.coordinates,
-      });
+  // HANDLER 2: For the History List (defined here for direct access to setSelected)
+  const handleAddressSelected = (item: HistoryItem) => {
+    // Direct update, bypassing geocoding (as discussed previously)
+    setDestination({
+      id: item.id,
+      name: item.addressText,
+      coordinates: item.coordinates,
+    });
   };
 
   // ----------------------- Render --------------------------------------

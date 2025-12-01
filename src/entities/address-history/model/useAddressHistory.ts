@@ -23,15 +23,34 @@ export function useAddressHistory(numberOfAddress: number) {
   return { data: data ?? [], isLoading, isError };
 }
 
+// Define the shape of the data the mutation will receive
+
+
 // 2. Hook to save a new item (used after successful navigation)
 export function useSaveAddressHistory() {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: saveAddressToHistory,
-    onSuccess: () => {
+    mutationFn: async (address: AddressToSave) => {
+      const data = await saveAddressToHistory(address);
+      console.log("Saved this address (inside mutationFn)", data);
+      return data;
+    },
+    onSuccess: (data) => {
+      // ----------------------------------------------------
+      // Print the data returned by saveAddressToHistory
+      console.log(
+        "✅ Successfully saved address. Returned data:",
+        data
+      );
+      // ----------------------------------------------------
+
       // Invalidate the cache to trigger a background re-fetch of the new list
       queryClient.invalidateQueries({ queryKey: HISTORY_QUERY_KEY });
+    },
+    // IMPORTANT: Add an onError handler to catch network/API errors
+    onError: (error) => {
+      console.error("❌ Mutation failed (Network/API Error):", error);
     },
   });
 

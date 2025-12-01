@@ -6,6 +6,12 @@ export interface HistoryItem {
   lastUsed: string; // ISO date string
 }
 
+export interface AddressToSave {
+  addressText: string;
+  longitude: number;
+  latitude: number;
+}
+
 import { client } from "../../../shared/api";
 
 export const fetchAddressHistory = async (
@@ -30,12 +36,17 @@ export const fetchAddressHistory = async (
   }
 };
 
-export const saveAddressToHistory = async (address: {
-  addressText: string;
-  coordinates: [number, number];
-}) => {
+export const saveAddressToHistory = async (
+  address: AddressToSave
+) => {
   try {
-    await client.post("/addressHistory", address);
+    const response = await client.post("/addressHistory", address);
+    if (response.status < 200 || response.status >= 300) {
+      throw new Error(
+        `Failed to fetch history (status ${response.status})`
+      );
+    }
+    return response.data as HistoryItem;
   } catch (err) {
     console.error("Error saving address history:", err);
     throw new Error("Failed to save history");
