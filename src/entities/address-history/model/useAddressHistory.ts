@@ -11,10 +11,12 @@ import {
 const HISTORY_QUERY_KEY = ["address-history"];
 
 // 1. Hook to fetch and expose the history data
-export function useAddressHistory() {
+export function useAddressHistory(numberOfAddress: number) {
   const { data, isLoading, isError } = useQuery({
     queryKey: HISTORY_QUERY_KEY,
-    queryFn: fetchAddressHistory,
+    queryFn: () => {
+      return fetchAddressHistory(numberOfAddress);
+    },
     staleTime: 1000 * 60 * 5, // Cache history for 5 mins
   });
 
