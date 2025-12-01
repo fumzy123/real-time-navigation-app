@@ -1,18 +1,52 @@
-import { useState } from "react"; // 1. Import useState
+import { useState } from "react";
 import { Geocoder } from "@mapbox/search-js-react";
 import {
   useDestinationStore,
   type Destination,
 } from "../model/store";
 
+// Define the dark mode theme variables based on the design aesthetic
+const darkTheme = {
+  variables: {
+    // General Styling for the search box
+    unit: "16px", // Base font size
+    borderRadius: "30px", // High rounding for the pill shape
+
+    // Colors for the dark input field (matches the image input background)
+    colorBackground: "#2e343b", // Dark background for the input box and list box
+    colorBackgroundHover: "#3b4249", // Slightly lighter on hover
+
+    // Text color
+    colorText: "#ffffff", // White text
+    colorTextPlaceholder: "#aaaaaa", // Light gray placeholder text
+
+    // Primary accent color (used for selected items, etc. - can be blue)
+    colorPrimary: "#1e90ff",
+
+    // Border and Shadow
+    border: "none", // Remove default border
+    boxShadow: "none", // Remove default shadow
+
+    // Padding inside the input
+    padding: "0.7em 1.2em", // Adjusted padding for a comfortable look
+  },
+  // You can add custom CSS to override specific Mapbox element classes if needed,
+  // but the variables above handle the main aesthetic.
+  // Inject custom CSS to specifically target the input field and force white text.
+  cssText: `
+    /* Targets the actual text input field inside the Geocoder control */
+    .mapboxgl-ctrl-geocoder input { 
+      color: #ffffff !important; 
+    }
+  `,
+};
+
 export function DestinationGeocoder() {
   const setSelected = useDestinationStore((s) => s.setSelected);
   const selectedDestination = useDestinationStore((s) => s.selected);
 
-  // 2. Local state to hold the input text when no destination is selected
   const [currentQuery, setCurrentQuery] = useState("");
 
-  // The name of the currently selected destination from the store, or null/undefined
   const selectedDestinationName = selectedDestination?.name;
 
   const handleSelect = (res: any) => {
@@ -30,18 +64,12 @@ export function DestinationGeocoder() {
 
     console.log(dest);
     setSelected(dest);
-
-    // 3. Update local state to match the selected name
     setCurrentQuery(dest.name);
   };
 
-  // 4. Handle input changes (when the user types)
   const handleChange = (newQuery: string) => {
-    // Update the local query state immediately
     setCurrentQuery(newQuery);
 
-    // If a destination was previously selected, clear it from the store
-    // as soon as the user changes the text.
     if (selectedDestinationName) {
       setSelected(null);
     }
@@ -49,20 +77,18 @@ export function DestinationGeocoder() {
 
   return (
     <Geocoder
+      // Apply the custom dark mode theme here
+      theme={darkTheme}
       accessToken={import.meta.env.VITE_MAPBOX_ACCESS_TOKEN}
       options={{
         language: "en",
         country: "CA",
       }}
       onRetrieve={handleSelect}
-      // A. The 'value' prop controls the input content.
-      // If an address is selected, use its name (persistence).
-      // Otherwise, use the user's typing (search).
       value={selectedDestinationName || currentQuery}
-      // B. The 'onChange' prop is required for controlled components
-      // and lets us clear the selection when the user starts typing.
       onChange={handleChange}
       marker={false}
+      // Updated placeholder text to match the design style
       placeholder="Enter destination..."
     />
   );

@@ -53,24 +53,51 @@ export function SearchDestinationWidget() {
 
   // ----------------------- Render --------------------------------------
   return (
-    <div>
-      <div
+    <div style={{ padding: "10px 0" }}>
+      {/* This is the new structure: The Geocoder is now full-width, 
+        and the button is placed directly below it, also full-width.
+      */}
+      <div style={{ marginBottom: "15px" }}>
+        <DestinationGeocoder />
+      </div>
+
+      <button
+        onClick={goToNavigationPage}
+        // STYLES FOR THE "START NAVIGATION" BUTTON
         style={{
-          display: "flex",
-          justifyContent: "space-between",
-          gap: "0.5em",
+          width: "100%", // Full width
+          padding: "15px 0",
+          backgroundColor: "#1e90ff", // Bright blue color
+          color: "#ffffff", // White text
+          border: "none",
+          borderRadius: "30px", // High rounding for pill shape
+          fontSize: "18px",
+          fontWeight: "600",
+          cursor: "pointer",
+          marginBottom: "20px",
+          boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
+          // Darker gradient/hover style if you want to extend the aesthetic
+          backgroundImage:
+            "linear-gradient(to right, #1e90ff, #00bfff)",
         }}
       >
-        <div style={{ flexGrow: 1 }}>
-          <DestinationGeocoder />
-        </div>
-        <button onClick={goToNavigationPage}>Navigate To</button>
-      </div>
+        <span style={{ marginRight: "8px" }}>🔍</span>
+        Start Navigation?
+      </button>
 
       <AddressHistoryList onAddressSelected={handleAddressSelected} />
 
       {destination && (
-        <div className="p-2 bg-gray-100 rounded">
+        <div
+          style={{
+            marginTop: "15px",
+            padding: "10px",
+            backgroundColor: "#2e343b", // Dark background for the selected info box
+            color: "#ffffff", // Light text
+            borderRadius: "8px",
+            fontSize: "14px",
+          }}
+        >
           <strong>Selected:</strong> {destination.name}
           <br />
           <strong>Lng/Lat:</strong>{" "}
