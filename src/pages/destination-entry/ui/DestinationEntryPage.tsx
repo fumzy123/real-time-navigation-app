@@ -4,10 +4,8 @@ import { SearchDestinationWidget } from "../../../features/destination-search/ui
 export function DestinationEntryPage() {
   return (
     <div style={{ padding: 20 }}>
-      <h1>Real‑Time Navigation</h1>
-      <p>
-        Feature #1: Location Permission + Current Location Retrieval
-      </p>
+      <h1>Geo Naviagtion App</h1>
+      <p>The Fastest way to find your way to any Destination</p>
       <LocationStatus />
       <SearchDestinationWidget />
     </div>
