@@ -33,49 +33,6 @@ export function NavigationMap() {
   const userMarkerRef = useRef<mapboxgl.Marker | null>(null);
   const destMarkerRef = useRef<mapboxgl.Marker | null>(null);
 
-  // ---- Function to update markers ----
-  const updateMarkers = (currentMap: mapboxgl.Map) => {
-    // ---------------- USER MARKER ----------------
-    if (enabled && position) {
-      if (!userMarkerRef.current) {
-        const el = document.createElement("div");
-        el.style.width = "20px";
-        el.style.height = "20px";
-        el.style.backgroundColor = "blue";
-        el.style.borderRadius = "50%";
-        el.style.border = "2px solid white";
-
-        userMarkerRef.current = new mapboxgl.Marker({ element: el })
-          .setLngLat([position.lng, position.lat])
-          .addTo(currentMap);
-      } else {
-        userMarkerRef.current.setLngLat([position.lng, position.lat]);
-      }
-
-      // Optional: Center map on user
-      currentMap.setCenter([position.lng, position.lat]);
-    } else if (userMarkerRef.current) {
-      userMarkerRef.current.remove();
-      userMarkerRef.current = null;
-    }
-
-    // ---------------- DESTINATION MARKER ----------------
-    if (destination) {
-      if (!destMarkerRef.current) {
-        destMarkerRef.current = new mapboxgl.Marker({
-          color: "red",
-        })
-          .setLngLat(destination.coordinates)
-          .addTo(currentMap);
-      } else {
-        destMarkerRef.current.setLngLat(destination.coordinates);
-      }
-    } else if (destMarkerRef.current) {
-      destMarkerRef.current.remove();
-      destMarkerRef.current = null;
-    }
-  };
-
   // ---- Effect 1: Init map once ----
   useEffect(() => {
     if (!containerRef.current) return;
@@ -98,6 +55,52 @@ export function NavigationMap() {
     const map = mapRef.current;
     if (!map) return;
 
+    // ---- Function to update markers ----
+    const updateMarkers = (currentMap: mapboxgl.Map) => {
+      // ---------------- USER MARKER ----------------
+      if (enabled && position) {
+        if (!userMarkerRef.current) {
+          const el = document.createElement("div");
+          el.style.width = "20px";
+          el.style.height = "20px";
+          el.style.backgroundColor = "blue";
+          el.style.borderRadius = "50%";
+          el.style.border = "2px solid white";
+
+          userMarkerRef.current = new mapboxgl.Marker({ element: el })
+            .setLngLat([position.lng, position.lat])
+            .addTo(currentMap);
+        } else {
+          userMarkerRef.current.setLngLat([
+            position.lng,
+            position.lat,
+          ]);
+        }
+
+        // Optional: Center map on user
+        currentMap.setCenter([position.lng, position.lat]);
+      } else if (userMarkerRef.current) {
+        userMarkerRef.current.remove();
+        userMarkerRef.current = null;
+      }
+
+      // ---------------- DESTINATION MARKER ----------------
+      if (destination) {
+        if (!destMarkerRef.current) {
+          destMarkerRef.current = new mapboxgl.Marker({
+            color: "red",
+          })
+            .setLngLat(destination.coordinates)
+            .addTo(currentMap);
+        } else {
+          destMarkerRef.current.setLngLat(destination.coordinates);
+        }
+      } else if (destMarkerRef.current) {
+        destMarkerRef.current.remove();
+        destMarkerRef.current = null;
+      }
+    };
+
     // Wait for the map to load before trying to add/update elements
     if (!map.loaded()) {
       map.on("load", () => updateMarkers(map));
@@ -107,7 +110,7 @@ export function NavigationMap() {
     updateMarkers(map);
 
     // Dependency array ensures this runs when position, destination, or enabled status changes
-  }, [position, destination, enabled, updateMarkers]);
+  }, [position, destination, enabled]);
 
   // ---- Effect 3: Draw route layer ----
   useEffect(() => {
@@ -175,7 +178,7 @@ export function NavigationMap() {
         <p>
           Estimated Time of Arrival: {routeData?.duration} seconds
         </p>
-        <p>Distance: {routeData?.distance} meters</p>
+        <p>Distance to Destination: {routeData?.distance} meters</p>
         <div
           ref={containerRef}
           style={{ width: "100%", height: "90vh" }}
