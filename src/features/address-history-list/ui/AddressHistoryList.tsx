@@ -8,7 +8,7 @@ interface AddressHistoryListProps {
 export function AddressHistoryList({
   onAddressSelected,
 }: AddressHistoryListProps) {
-  const { data: history, isLoading, isError } = useAddressHistory();
+  const { data: history, isLoading, isError } = useAddressHistory(4);
 
   if (isLoading) return <div>Loading history...</div>;
   if (isError) return <div>Could not load history.</div>;
