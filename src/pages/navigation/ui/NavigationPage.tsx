@@ -7,6 +7,8 @@ import useCurrentLocation from "../../../entities/location/model/useCurrentLocat
 import { useDestinationStore } from "../../../entities/destination";
 import { useLocationStore } from "../../../entities/location/model/store";
 
+import { useRoute } from "../../../entities/route/model/useRoute";
+
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
 export function NavigationPage() {
@@ -16,6 +18,9 @@ export function NavigationPage() {
 
   // ---- Destination ----
   const destination = useDestinationStore((s) => s.selected);
+
+  //----- Route -------
+  const route = useRoute(position, destination);
 
   // ---- Debug logs ----
   console.log("Location enabled:", enabled);
@@ -112,6 +117,45 @@ export function NavigationPage() {
     });
   }, [position, destination, enabled]);
 
+  // ---- Draw route layer ----
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    if (!map.loaded()) return;
+
+    // Remove old
+    if (map.getSource("route")) {
+      map.removeLayer("route");
+      map.removeSource("route");
+    }
+
+    if (!route) return;
+
+    map.addSource("route", {
+      type: "geojson",
+      data: {
+        type: "Feature",
+        properties: {},
+        geometry: route,
+      },
+    });
+
+    map.addLayer({
+      id: "route",
+      type: "line",
+      source: "route",
+      layout: {
+        "line-join": "round",
+        "line-cap": "round",
+      },
+      paint: {
+        "line-color": "#007aff",
+        "line-width": 5,
+      },
+    });
+  }, [route]);
+
+  // ---------- Render ---------
   return (
     <div style={{ width: "100%", height: "100vh" }}>
       <h2 style={{ padding: 10 }}>Navigation</h2>
