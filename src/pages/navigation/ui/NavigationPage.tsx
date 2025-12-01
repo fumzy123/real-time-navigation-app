@@ -1,10 +1,9 @@
 // src/pages/navigation/NavigationPage.tsx
 
-import { NavigationMap } from "../../../features/navigation-map/ui/NavigationMap";
-
 // Re-importing entities needed for the simple status/page logic
 import useCurrentLocation from "../../../entities/location/model/useCurrentLocation";
 import { useLocationStore } from "../../../entities/location/model/store";
+import { NavigationMap } from "../../../features/navigation-map/ui/NavigationMap";
 
 export function NavigationPage() {
   // We only need the state/data necessary for the Page UI/Status messages

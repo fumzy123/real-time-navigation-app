@@ -33,6 +33,49 @@ export function NavigationMap() {
   const userMarkerRef = useRef<mapboxgl.Marker | null>(null);
   const destMarkerRef = useRef<mapboxgl.Marker | null>(null);
 
+  // ---- Function to update markers ----
+  const updateMarkers = (currentMap: mapboxgl.Map) => {
+    // ---------------- USER MARKER ----------------
+    if (enabled && position) {
+      if (!userMarkerRef.current) {
+        const el = document.createElement("div");
+        el.style.width = "20px";
+        el.style.height = "20px";
+        el.style.backgroundColor = "blue";
+        el.style.borderRadius = "50%";
+        el.style.border = "2px solid white";
+
+        userMarkerRef.current = new mapboxgl.Marker({ element: el })
+          .setLngLat([position.lng, position.lat])
+          .addTo(currentMap);
+      } else {
+        userMarkerRef.current.setLngLat([position.lng, position.lat]);
+      }
+
+      // Optional: Center map on user
+      currentMap.setCenter([position.lng, position.lat]);
+    } else if (userMarkerRef.current) {
+      userMarkerRef.current.remove();
+      userMarkerRef.current = null;
+    }
+
+    // ---------------- DESTINATION MARKER ----------------
+    if (destination) {
+      if (!destMarkerRef.current) {
+        destMarkerRef.current = new mapboxgl.Marker({
+          color: "red",
+        })
+          .setLngLat(destination.coordinates)
+          .addTo(currentMap);
+      } else {
+        destMarkerRef.current.setLngLat(destination.coordinates);
+      }
+    } else if (destMarkerRef.current) {
+      destMarkerRef.current.remove();
+      destMarkerRef.current = null;
+    }
+  };
+
   // ---- Effect 1: Init map once ----
   useEffect(() => {
     if (!containerRef.current) return;
@@ -61,60 +104,16 @@ export function NavigationMap() {
       return;
     }
 
-    const updateMarkers = (currentMap: mapboxgl.Map) => {
-      // ---------------- USER MARKER ----------------
-      if (enabled && position) {
-        if (!userMarkerRef.current) {
-          const el = document.createElement("div");
-          el.style.width = "20px";
-          el.style.height = "20px";
-          el.style.backgroundColor = "blue";
-          el.style.borderRadius = "50%";
-          el.style.border = "2px solid white";
-
-          userMarkerRef.current = new mapboxgl.Marker({ element: el })
-            .setLngLat([position.lng, position.lat])
-            .addTo(currentMap);
-        } else {
-          userMarkerRef.current.setLngLat([
-            position.lng,
-            position.lat,
-          ]);
-        }
-
-        // Optional: Center map on user
-        currentMap.setCenter([position.lng, position.lat]);
-      } else if (userMarkerRef.current) {
-        userMarkerRef.current.remove();
-        userMarkerRef.current = null;
-      }
-
-      // ---------------- DESTINATION MARKER ----------------
-      if (destination) {
-        if (!destMarkerRef.current) {
-          destMarkerRef.current = new mapboxgl.Marker({
-            color: "red",
-          })
-            .setLngLat(destination.coordinates)
-            .addTo(currentMap);
-        } else {
-          destMarkerRef.current.setLngLat(destination.coordinates);
-        }
-      } else if (destMarkerRef.current) {
-        destMarkerRef.current.remove();
-        destMarkerRef.current = null;
-      }
-    };
-
     updateMarkers(map);
 
     // Dependency array ensures this runs when position, destination, or enabled status changes
-  }, [position, destination, enabled]);
+  }, [position, destination, enabled, updateMarkers]);
 
   // ---- Effect 3: Draw route layer ----
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
+    if (!routeData) return;
 
     // Function to handle adding/updating the route layer
     const updateRoute = () => {
@@ -160,13 +159,8 @@ export function NavigationMap() {
       map.on("load", updateRoute);
     }
 
-    // Cleanup: Ensure the event listener is removed if the component unmounts quickly
-    return () => {
-      if (map.getLayer("route")) {
-        map.off("load", updateRoute);
-      }
-    };
-  }, [routeData.geometry]); // Reruns when a new route is calculated
+    // // Cleanup: Ensure the event listener is removed if the component unmounts quickly
+  }, [routeData]); // Reruns when a new route is calculated
 
   // ---------- Render ---------
   return (
@@ -176,10 +170,17 @@ export function NavigationMap() {
           Calculating the best route...
         </p>
       )}
-      <div
-        ref={containerRef}
-        style={{ width: "100%", height: "90vh" }}
-      />
+
+      <div>
+        <p>
+          Estimated Time of Arrival: {routeData?.duration} seconds
+        </p>
+        <p>Distance: {routeData?.distance} meters</p>
+        <div
+          ref={containerRef}
+          style={{ width: "100%", height: "90vh" }}
+        />
+      </div>
     </>
   );
 }

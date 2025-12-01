@@ -7,6 +7,7 @@ import type { Destination } from "../../destination/model/store";
 interface RouteData {
   geometry: GeoJSON.Geometry | null; // Assuming Mapbox geometry is a GeoJSON Geometry object
   duration: number | null; // Duration is typically in seconds
+  distance: number | null; // Distance is typically in meters
 }
 
 /**

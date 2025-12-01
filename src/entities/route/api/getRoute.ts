@@ -8,7 +8,7 @@ export async function getRoute(
 
   const res = await fetch(url);
   if (!res.ok) {
-    throw new Error(`Mapbox API error: ${res.statusText}`)
+    throw new Error(`Mapbox API error: ${res.statusText}`);
   }
 
   // Get Data
@@ -19,5 +19,6 @@ export async function getRoute(
   return {
     geometry: bestRoute?.geometry || null,
     duration: bestRoute?.duration || null,
-  }
+    distance: bestRoute?.distance || null,
+  };
 }
