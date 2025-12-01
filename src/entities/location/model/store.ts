@@ -1,34 +1,34 @@
+// src/entities/location/model/store.ts
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 export interface Position {
   lat: number;
   lng: number;
-  accuracy: number;
-  heading: number | null;
-  speed: number | null;
-  timestamp: number;
+  accuracy?: number;
+  heading?: number | null;
+  speed?: number | null;
+  timestamp?: number;
 }
 
 interface LocationStore {
   position: Position | null;
-  setPosition: (pos: Position) => void;
+  setPosition: (pos: Position | null) => void;
 
-  status: "loading" | "granted" | "denied" | "prompt" | "unavailable";
-  setStatus: (s: LocationStore["status"]) => void;
+  // New: global toggle for location
+  enabled: boolean;
+  setEnabled: (enabled: boolean) => void;
 }
 
 export const useLocationStore = create<LocationStore>()(
   persist(
     (set) => ({
       position: null,
-      status: "loading",
+      enabled: false, // initially off
 
       setPosition: (pos) => set({ position: pos }),
-      setStatus: (status) => set({ status }),
+      setEnabled: (enabled) => set({ enabled }),
     }),
-    {
-      name: "location-store",
-    }
+    { name: "location-store" }
   )
 );
