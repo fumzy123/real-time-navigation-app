@@ -19,7 +19,13 @@ export function NavigationMap() {
   const { enabled } = useLocationStore();
   const position = useCurrentLocation();
   const destination = useDestinationStore((s) => s.selected);
-  const route = useRoute(position, destination);
+  const { data: routeData, isLoading: isRouteLoading } = useRoute(
+    position,
+    destination
+  );
+
+  // ---- Debug logs ----
+  console.log("🚀 ~ NavigationMap ~ routeData:", routeData?.geometry);
 
   // ---- Refs for Mapbox instances ----
   const mapRef = useRef<mapboxgl.Map | null>(null);
@@ -51,8 +57,8 @@ export function NavigationMap() {
 
     // Wait for the map to load before trying to add/update elements
     if (!map.loaded()) {
-        map.on("load", () => updateMarkers(map));
-        return;
+      map.on("load", () => updateMarkers(map));
+      return;
     }
 
     const updateMarkers = (currentMap: mapboxgl.Map) => {
@@ -70,12 +76,14 @@ export function NavigationMap() {
             .setLngLat([position.lng, position.lat])
             .addTo(currentMap);
         } else {
-          userMarkerRef.current.setLngLat([position.lng, position.lat]);
+          userMarkerRef.current.setLngLat([
+            position.lng,
+            position.lat,
+          ]);
         }
 
         // Optional: Center map on user
         currentMap.setCenter([position.lng, position.lat]);
-
       } else if (userMarkerRef.current) {
         userMarkerRef.current.remove();
         userMarkerRef.current = null;
@@ -84,7 +92,9 @@ export function NavigationMap() {
       // ---------------- DESTINATION MARKER ----------------
       if (destination) {
         if (!destMarkerRef.current) {
-          destMarkerRef.current = new mapboxgl.Marker({ color: "red" })
+          destMarkerRef.current = new mapboxgl.Marker({
+            color: "red",
+          })
             .setLngLat(destination.coordinates)
             .addTo(currentMap);
         } else {
@@ -108,61 +118,68 @@ export function NavigationMap() {
 
     // Function to handle adding/updating the route layer
     const updateRoute = () => {
-        // Remove old layer/source if they exist
-        if (map.getLayer("route")) {
-            map.removeLayer("route");
-        }
-        if (map.getSource("route")) {
-            map.removeSource("route");
-        }
+      // Remove old layer/source if they exist
+      if (map.getLayer("route")) {
+        map.removeLayer("route");
+      }
+      if (map.getSource("route")) {
+        map.removeSource("route");
+      }
 
-        if (!route) return;
+      if (!routeData.geometry) return;
 
-        // Add new source and layer
-        map.addSource("route", {
-            type: "geojson",
-            data: {
-                type: "Feature",
-                properties: {},
-                geometry: route,
-            },
-        });
+      // Add new source and layer
+      map.addSource("route", {
+        type: "geojson",
+        data: {
+          type: "Feature",
+          properties: {},
+          geometry: routeData.geometry,
+        },
+      });
 
-        map.addLayer({
-            id: "route",
-            type: "line",
-            source: "route",
-            layout: {
-                "line-join": "round",
-                "line-cap": "round",
-            },
-            paint: {
-                "line-color": "#007aff",
-                "line-width": 5,
-            },
-        });
+      map.addLayer({
+        id: "route",
+        type: "line",
+        source: "route",
+        layout: {
+          "line-join": "round",
+          "line-cap": "round",
+        },
+        paint: {
+          "line-color": "#007aff",
+          "line-width": 5,
+        },
+      });
     };
-    
+
     // Only update the route once the map has loaded
     if (map.loaded()) {
-        updateRoute();
+      updateRoute();
     } else {
-        map.on("load", updateRoute);
+      map.on("load", updateRoute);
     }
-    
+
     // Cleanup: Ensure the event listener is removed if the component unmounts quickly
     return () => {
-        if (map.getLayer("route")) {
-            map.off("load", updateRoute);
-        }
-    }
-  }, [route]); // Reruns when a new route is calculated
+      if (map.getLayer("route")) {
+        map.off("load", updateRoute);
+      }
+    };
+  }, [routeData.geometry]); // Reruns when a new route is calculated
 
   // ---------- Render ---------
   return (
-    <div
-      ref={containerRef}
-      style={{ width: "100%", height: "90vh" }}
-    />
+    <>
+      {isRouteLoading && (
+        <p style={{ padding: 10, color: "#666" }}>
+          Calculating the best route...
+        </p>
+      )}
+      <div
+        ref={containerRef}
+        style={{ width: "100%", height: "90vh" }}
+      />
+    </>
   );
 }
