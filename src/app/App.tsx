@@ -3,7 +3,7 @@ import "./styles/App.css";
 
 // 1. Import your pages here
 import { DestinationEntryPage } from "../pages/destination-entry/ui/DestinationEntryPage";
-import { NavigationPage } from "../pages/navigation/ui/_NavigationPage";
+import { NavigationPage } from "../pages/navigation/ui/NavigationPage";
 
 function App() {
   // The App component's main job is to define the global structure and routes.
