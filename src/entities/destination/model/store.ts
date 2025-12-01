@@ -8,7 +8,7 @@ export interface Destination {
 
 interface DestinationState {
   selected: Destination | null;
-  setSelected: (dest: Destination) => void;
+  setSelected: (dest: Destination | null) => void;
 }
 
 export const useDestinationStore = create<DestinationState>(
