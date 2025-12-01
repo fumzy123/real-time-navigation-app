@@ -1,4 +1,5 @@
 import LocationStatus from "../../../entities/location/ui/LocationStatus";
+import { SearchDestinationWidget } from "../../../features/destination-search/ui/SearchDestinationWidget";
 
 export function DestinationEntryPage() {
   return (
@@ -8,6 +9,7 @@ export function DestinationEntryPage() {
         Feature #1: Location Permission + Current Location Retrieval
       </p>
       <LocationStatus />
+      <SearchDestinationWidget />
     </div>
   );
 }
