@@ -1,5 +1,4 @@
 import { Routes, Route } from "react-router";
-import "./styles/App.css";
 
 // 1. Import your pages here
 import { DestinationEntryPage } from "../pages/destination-entry/ui/DestinationEntryPage";
