@@ -11,10 +11,14 @@ import { useLocationStore } from "../../../entities/location/model/store";
 import { useRoute } from "../../../entities/route/model/useRoute";
 
 // NOTE: Access Token is typically set globally or in environment setup.
-// Keep it here for clarity, but it only needs to be run once.
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
-export function NavigationMap() {
+// Add a prop for handling the cancel/stop action
+interface NavigationMapProps {
+  onCancel: () => void;
+}
+
+export function NavigationMap({ onCancel }: NavigationMapProps) {
   // ---- Dependencies from Entity Layer ----
   const { enabled } = useLocationStore();
   const position = useCurrentLocation();
@@ -39,9 +43,11 @@ export function NavigationMap() {
 
     const map = new mapboxgl.Map({
       container: containerRef.current,
-      style: "mapbox://styles/mapbox/standard",
+      // Using a dark style for consistency
+      style: "mapbox://styles/mapbox/dark-v11",
       center: destination?.coordinates ?? [0, 0],
       zoom: 14,
+      attributionControl: false,
     });
 
     mapRef.current = map;
@@ -63,9 +69,10 @@ export function NavigationMap() {
           const el = document.createElement("div");
           el.style.width = "20px";
           el.style.height = "20px";
-          el.style.backgroundColor = "blue";
+          el.style.backgroundColor = "#1e90ff"; // Bright blue
           el.style.borderRadius = "50%";
-          el.style.border = "2px solid white";
+          el.style.border = "3px solid white"; // Thicker white border
+          el.style.boxShadow = "0 0 5px rgba(0, 0, 0, 0.5)";
 
           userMarkerRef.current = new mapboxgl.Marker({ element: el })
             .setLngLat([position.lng, position.lat])
@@ -88,7 +95,7 @@ export function NavigationMap() {
       if (destination) {
         if (!destMarkerRef.current) {
           destMarkerRef.current = new mapboxgl.Marker({
-            color: "red",
+            color: "#ff6b6b", // Pink/Red color matching the design
           })
             .setLngLat(destination.coordinates)
             .addTo(currentMap);
@@ -149,7 +156,7 @@ export function NavigationMap() {
           "line-cap": "round",
         },
         paint: {
-          "line-color": "#007aff",
+          "line-color": "#1e90ff", // Bright blue route line
           "line-width": 5,
         },
       });
@@ -165,24 +172,138 @@ export function NavigationMap() {
     // // Cleanup: Ensure the event listener is removed if the component unmounts quickly
   }, [routeData]); // Reruns when a new route is calculated
 
+  // Format data for display
+  const distanceKm = routeData?.distance
+    ? (routeData.distance / 1000).toFixed(2) + " km"
+    : "...";
+  const durationMin = routeData?.duration
+    ? (routeData.duration / 60).toFixed(1) + " min"
+    : "...";
+  // Placeholder for the next instruction text (not implemented yet)
+  const nextInstruction = "Turn left onto Rasdon";
+
   // ---------- Render ---------
   return (
     <>
       {isRouteLoading && (
-        <p style={{ padding: 10, color: "#666" }}>
+        <p
+          style={{
+            padding: 10,
+            color: "#aaaaaa",
+            textAlign: "center",
+          }}
+        >
           Calculating the best route...
         </p>
       )}
 
-      <div>
-        <p>
-          Estimated Time of Arrival: {routeData?.duration} seconds
-        </p>
-        <p>Distance to Destination: {routeData?.distance} meters</p>
+      {/* Main Wrapper: This container must have position: relative to allow 
+          absolute positioning of the info box and button. */}
+      <div
+        style={{
+          width: "90%",
+          margin: "0 auto",
+          position: "relative", // ⬅️ IMPORTANT for absolute positioning
+        }}
+      >
+        {/* Map Container */}
         <div
           ref={containerRef}
-          style={{ width: "100%", height: "90vh" }}
+          style={{
+            width: "100%",
+            height: "75vh",
+            borderRadius: "12px",
+            overflow: "hidden",
+          }}
         />
+
+        {/* 1. Time, Distance, and Instruction Info Box (Absolute Positioned) */}
+        {routeData && (
+          <div
+            style={{
+              position: "absolute",
+              bottom: "20px",
+              left: "20px",
+              backgroundColor: "#242424", // Dark background for the card
+              padding: "15px",
+              borderRadius: "12px",
+              color: "#ffffff",
+              display: "flex",
+              alignItems: "center",
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.5)",
+              zIndex: 10, // Ensure it floats above the map
+            }}
+          >
+            {/* Time & Distance Block (Left Side) */}
+            <div style={{ marginRight: "15px" }}>
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: "24px",
+                  fontWeight: "700",
+                }}
+              >
+                {durationMin}
+              </p>
+              <p
+                style={{
+                  margin: "5px 0",
+                  fontSize: "18px",
+                  fontWeight: "500",
+                }}
+              >
+                {distanceKm}
+              </p>
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: "14px",
+                  color: "#aaaaaa",
+                }}
+              >
+                {nextInstruction}
+              </p>
+            </div>
+
+            {/* Stop/Cancel Button (Right Side) */}
+            <button
+              onClick={onCancel} // Calls the function passed from the parent page
+              style={{
+                backgroundColor: "#e74c3c", // Red button color
+                border: "none",
+                borderRadius: "50%", // Circular button
+                width: "50px",
+                height: "50px",
+                padding: 0,
+                cursor: "pointer",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: "0 2px 5px rgba(0, 0, 0, 0.5)",
+              }}
+            >
+              <span
+                style={{
+                  color: "white",
+                  fontSize: "20px",
+                  lineHeight: 1,
+                }}
+              >
+                ❌
+              </span>
+              <span
+                style={{
+                  color: "white",
+                  fontSize: "10px",
+                  marginTop: "1px",
+                }}
+              >
+                Stop
+              </span>
+            </button>
+          </div>
+        )}
       </div>
     </>
   );
