@@ -11,7 +11,7 @@ export function NavigationPage() {
   const position = useCurrentLocation(); // Used here to determine loading status
 
   return (
-    <div style={{ width: "100%", height: "100vh" }}>
+    <div>
       <h2 style={{ padding: 10 }}>🗺️ Live Navigation</h2>
 
       {/* Simple status/loading message composition (Widget or simple Page logic) */}
