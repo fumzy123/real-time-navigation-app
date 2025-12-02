@@ -1,2 +1,2 @@
-export { useDestinationStore } from "./model/store";
+export * from "./model/store";
 export { DestinationGeocoder } from "./ui/DestinationGeocoder";
