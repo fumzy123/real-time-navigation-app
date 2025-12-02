@@ -3,7 +3,16 @@ import { SearchDestinationWidget } from "../../../features/destination-search/ui
 
 export function DestinationEntryPage() {
   return (
-    <div style={{ padding: 20 }}>
+    <div
+      style={{
+        padding: 20,
+        minWidth: 550,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
       <h1>Geo Naviagtion App</h1>
       <p>The Fastest way to find your way to any Destination</p>
       <LocationStatus />

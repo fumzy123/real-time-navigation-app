@@ -53,7 +53,7 @@ export function SearchDestinationWidget() {
 
   // ----------------------- Render --------------------------------------
   return (
-    <div style={{ padding: "10px 0" }}>
+    <div style={{ padding: "10px 0", width: "30%" }}>
       {/* This is the new structure: The Geocoder is now full-width, 
         and the button is placed directly below it, also full-width.
       */}
@@ -96,6 +96,7 @@ export function SearchDestinationWidget() {
             color: "#ffffff", // Light text
             borderRadius: "8px",
             fontSize: "14px",
+            textAlign: "center",
           }}
         >
           <strong>Selected:</strong> {destination.name}
