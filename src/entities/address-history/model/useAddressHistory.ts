@@ -7,6 +7,7 @@ import {
   fetchAddressHistory,
   saveAddressToHistory,
 } from "../api/index";
+import type { AddressToSave, DestinationPoint } from "./types";
 
 const HISTORY_QUERY_KEY = ["address-history"];
 
@@ -14,8 +15,18 @@ const HISTORY_QUERY_KEY = ["address-history"];
 export function useAddressHistory(numberOfAddress: number) {
   const { data, isLoading, isError } = useQuery({
     queryKey: HISTORY_QUERY_KEY,
-    queryFn: () => {
-      return fetchAddressHistory(numberOfAddress);
+    queryFn: async () => {
+      const data = await fetchAddressHistory(numberOfAddress);
+      console.log("Address History Fetched:", data);
+
+      // Map it to HistoryItem
+      const addressList: DestinationPoint[] = data.map((address) => ({
+        id: address.id,
+        lastUsed: address.lastUsed,
+        addressText: address.addressText,
+        coordinates: [address.longitude, address.latitude],
+      }));
+      return addressList;
     },
     staleTime: 1000 * 60 * 5, // Cache history for 5 mins
   });
@@ -24,7 +35,6 @@ export function useAddressHistory(numberOfAddress: number) {
 }
 
 // Define the shape of the data the mutation will receive
-
 
 // 2. Hook to save a new item (used after successful navigation)
 export function useSaveAddressHistory() {

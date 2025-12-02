@@ -2,10 +2,11 @@ import { useNavigate } from "react-router";
 import {
   DestinationGeocoder,
   useDestinationStore,
+  type Destination, // ⬅️ Import Destination type for clarity
 } from "../../../entities/destination";
 import { AddressHistoryList } from "../../address-history-list/ui/AddressHistoryList";
-import type { HistoryItem } from "../../../entities/address-history/api";
 import { useSaveAddressHistory } from "../../../entities/address-history/model/useAddressHistory";
+import type { DestinationPoint } from "../../../entities/address-history/model/types";
 
 export function SearchDestinationWidget() {
   //----------------------- Store --------------------------------------
@@ -17,45 +18,72 @@ export function SearchDestinationWidget() {
   // React Router
   const navigate = useNavigate();
 
-  //----------------------- Event Handler --------------------------------------
-  const goToNavigationPage = async () => {
+  //----------------------- Core Navigation Logic --------------------------------------
+
+  /**
+   * IMPORTANT: Core function now accepts the destination object directly.
+   * This guarantees it works with the correct, latest value.
+   */
+  const executeNavigation = async (destinationToUse: Destination) => {
     console.log(
-      "🚀 ~ goToNavigationPage: ~ destination:",
-      destination
+      "🚀 ~ executeNavigation: ~ destination:",
+      destinationToUse
     );
-    if (!destination) {
+
+    // This check should technically be redundant if called correctly, but is good practice.
+    if (!destinationToUse) {
       alert("Please select a destination first.");
       return;
     }
 
-    console.log("About to save", destination);
+    console.log("About to save", destinationToUse);
     // Save Address to Database
     await saveAddressMutation.mutateAsync({
-      addressText: destination.name,
-      longitude: destination.coordinates[0],
-      latitude: destination.coordinates[1],
+      addressText: destinationToUse.name,
+      longitude: destinationToUse.coordinates[0],
+      latitude: destinationToUse.coordinates[1],
     });
 
     // Go to next page
     navigate("/navigate");
   };
 
-  // HANDLER 1: For the Mapbox Geocoder (which calls setSelected internally)
-  // HANDLER 2: For the History List (defined here for direct access to setSelected)
-  const handleAddressSelected = (item: HistoryItem) => {
-    // Direct update, bypassing geocoding (as discussed previously)
-    setDestination({
-      id: item.id,
+  /**
+   * Handler for the main 'Start Navigation' button.
+   * This relies on the store being updated by the Geocoder component.
+   */
+  const goToNavigationPage = () => {
+    // If the store is already updated (by Geocoder), use that value
+    if (destination) {
+      executeNavigation(destination);
+    } else {
+      alert("Please select a destination first.");
+    }
+  };
+
+  // HANDLER: For the History List
+  const handleAddressSelected = (item: DestinationPoint) => {
+    console.log("The address history selected is:", item);
+
+    // 1. Create the new Destination object
+    const newDestination: Destination = {
+      id: item.id.toString(),
       name: item.addressText,
       coordinates: item.coordinates,
-    });
+    };
+
+    // 2. Update the store (this is async and not guaranteed to be immediate)
+    setDestination(newDestination);
+
+    // 3. IMMEDIATELY call the core navigation logic with the fresh object
+    executeNavigation(newDestination); // ⬅️ FIX: Use the fresh local object
   };
 
   // ----------------------- Render --------------------------------------
   return (
     <div style={{ padding: "10px 0", width: "30%" }}>
       {/* This is the new structure: The Geocoder is now full-width, 
-        and the button is placed directly below it, also full-width.
+          and the button is placed directly below it, also full-width.
       */}
       <div style={{ marginBottom: "15px" }}>
         <DestinationGeocoder />

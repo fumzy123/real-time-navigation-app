@@ -1,8 +1,8 @@
-import type { HistoryItem } from "../../../entities/address-history/api";
+import type { DestinationPoint } from "../../../entities/address-history/model/types";
 import { useAddressHistory } from "../../../entities/address-history/model/useAddressHistory";
 
 interface AddressHistoryListProps {
-  onAddressSelected: (item: HistoryItem) => void;
+  onAddressSelected: (item: DestinationPoint) => void;
 }
 
 export function AddressHistoryList({
